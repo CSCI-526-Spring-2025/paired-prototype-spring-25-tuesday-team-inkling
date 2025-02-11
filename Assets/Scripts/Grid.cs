@@ -113,6 +113,18 @@ public class HexagonGrid
             }
             else
             {
+                tempTri.index1 = offset + 0;
+                tempTri.index2 = offset + 0 + height;
+                tempTri.index3 = offset + 0 + 1;
+                tempTri.flag = true;
+                _triangles.Add(tempTri);
+
+                tempTri.index1 = offset + height - 2;
+                tempTri.index2 = offset + height - 2 + height;
+                tempTri.index3 = offset + height - 2 + 1;
+                tempTri.flag = true;
+                _triangles.Add(tempTri);
+
                 // right side
                 for (int y = 0; y < height - 1; y++)
                 {
@@ -120,7 +132,7 @@ public class HexagonGrid
                     tempTri.index2 = offset + y + height;
                     tempTri.index3 = offset + y + 1;
                     tempTri.flag = true;
-                    _triangles.Add(tempTri);
+                    //_triangles.Add(tempTri);
 
                     if (y >= height - 2)
                     {
@@ -141,15 +153,32 @@ public class HexagonGrid
         //DEBUGGING USE ONLY
         if (true)
         {
+            int temp = 1;
+
             for (int i = 0; i < _triangles.Count; i++)
             {
                 point tempPoint1 = _points[_triangles[i].index1];
                 point tempPoint2 = _points[_triangles[i].index2];
                 point tempPoint3 = _points[_triangles[i].index3];
-                Debug.DrawLine(new Vector3(tempPoint1.x * 10, tempPoint1.y * 10, 0.0f), new Vector3(tempPoint2.x * 10, tempPoint2.y * 10, 0.0f), Color.white, 1000f);
-                Debug.DrawLine(new Vector3(tempPoint2.x * 10, tempPoint2.y * 10, 0.0f), new Vector3(tempPoint3.x * 10, tempPoint3.y * 10, 0.0f), Color.white, 1000f);
-                Debug.DrawLine(new Vector3(tempPoint3.x * 10, tempPoint3.y * 10, 0.0f), new Vector3(tempPoint1.x * 10, tempPoint1.y * 10, 0.0f), Color.white, 1000f);
+                
+
+                int r = 1;
+                int g = 1;
+                int b = 1;
+
+                Debug.DrawLine(new Vector3(tempPoint1.x * 10, tempPoint1.y * 10, 0.0f), new Vector3(tempPoint2.x * 10, tempPoint2.y * 10, 0.0f), Color.red, 1000f);
+                Debug.DrawLine(new Vector3(tempPoint2.x * 10, tempPoint2.y * 10, 0.0f), new Vector3(tempPoint3.x * 10, tempPoint3.y * 10, 0.0f), Color.blue, 1000f);
+                Debug.DrawLine(new Vector3(tempPoint3.x * 10, tempPoint3.y * 10, 0.0f), new Vector3(tempPoint1.x * 10, tempPoint1.y * 10, 0.0f), Color.green, 1000f);
+                r += 1;
+                g += 1;
+                b += 1;
+
             }
+            Debug.Log("Size: " + _triangles.Count);
+
+            int triangleRemoveCount = 20;
+
+
         }
 
     }
