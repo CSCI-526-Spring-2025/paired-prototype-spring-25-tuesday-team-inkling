@@ -8,7 +8,11 @@ public class TestObject : MonoBehaviour
     private void Start()
     {
         // Hexagon Size, Relaxation Passes
-        HexagonGrid grid = new HexagonGrid(10, 10);
-        
+        //HexagonGrid grid = new HexagonGrid(10, 10);
+        //SquareGrid grid = new SquareGrid(10, 10);
+        TestGrid grid = new TestGrid();
+
+
+
     }
 }

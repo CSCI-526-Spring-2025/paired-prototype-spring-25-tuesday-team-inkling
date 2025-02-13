@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using UnityEditor;
 using UnityEngine;
 using static HexagonGrid;
 
@@ -44,7 +45,47 @@ public class HexagonGrid
     private List<point> _points = new List<point>();
     private List<triangle> _triangles = new List<triangle>();
 
+
+    private HexagonGrid hexGrid;
+    private List<int> selectedTriangles = new List<int>();
+    private HashSet<int> allAdjacentTriangles = new HashSet<int>();
+
     // == Initalization Function ==
+
+    private Vector3 CalculateCentroid(triangle tri)
+    {
+        point p1 = _points[tri.index1];
+        point p2 = _points[tri.index2];
+        point p3 = _points[tri.index3];
+
+        // Calculate the centroid: (x1+x2+x3)/3, (y1+y2+y3)/3
+        float centroidX = (p1.x + p2.x + p3.x) / 3;
+        float centroidY = (p1.y + p2.y + p3.y) / 3;
+
+        return new Vector3(centroidX * 10, centroidY * 10, 0.0f); // Scaling factor to make it visible
+    }
+    // Function to display text at the centroid of each triangle
+    private void DisplayCentroidText(Dictionary<int, List<int>> adjacencyMap)
+    {
+        foreach (var entry in adjacencyMap)
+        {
+            int triangleIndex = entry.Key;
+            triangle selectedTri = _triangles[triangleIndex];
+
+            // Calculate the centroid of the triangle
+            Vector3 centroid = CalculateCentroid(selectedTri);
+
+            // Display the triangle index at the centroid (GUI.Label or TextMesh)
+            // Option 1: Use GUI.Label (simple, but works with UI)
+            GameObject textObject = new GameObject("TriangleText_" + triangleIndex);
+            TextMesh textMesh = textObject.AddComponent<TextMesh>();
+            textMesh.text = triangleIndex.ToString();
+            textMesh.fontSize = 8;
+            textMesh.color = Color.white;
+            textObject.transform.position = centroid;
+
+        }
+    }
     public HexagonGrid(int sideSize, int searchIterationCount)
     {
         if (sideSize < 2)
@@ -174,10 +215,84 @@ public class HexagonGrid
                 b += 1;
 
             }
-            Debug.Log("Size: " + _triangles.Count);
+            
 
-            int triangleRemoveCount = 20;
+            int triangleRemoveCount = 10;
+            int totalTriangles = _triangles.Count;
+            Debug.Log("Size: " + totalTriangles);
+            HashSet<int> selectedTriangleIndices = new HashSet<int>();
+            while (selectedTriangleIndices.Count < triangleRemoveCount)
+            {
+                int randomIndex = Random.Range(0, totalTriangles);
+                selectedTriangleIndices.Add(randomIndex);
+            }
+            selectedTriangles.AddRange(selectedTriangleIndices);
 
+            for (int i = 0; i < selectedTriangles.Count; i++)
+            {
+                point tempPoint1 = _points[_triangles[selectedTriangles[i]].index1];
+                point tempPoint2 = _points[_triangles[selectedTriangles[i]].index2];
+                point tempPoint3 = _points[_triangles[selectedTriangles[i]].index3];
+
+
+                int r = 1;
+                int g = 1;
+                int b = 1;
+
+                Debug.DrawLine(new Vector3(tempPoint1.x * 10, tempPoint1.y * 10, 0.0f), new Vector3(tempPoint2.x * 10, tempPoint2.y * 10, 0.0f), Color.white, 1000f);
+                Debug.DrawLine(new Vector3(tempPoint2.x * 10, tempPoint2.y * 10, 0.0f), new Vector3(tempPoint3.x * 10, tempPoint3.y * 10, 0.0f), Color.white, 1000f);
+                Debug.DrawLine(new Vector3(tempPoint3.x * 10, tempPoint3.y * 10, 0.0f), new Vector3(tempPoint1.x * 10, tempPoint1.y * 10, 0.0f), Color.white, 1000f);
+                r += 1;
+                g += 1;
+                b += 1;
+
+            }
+
+            Dictionary<int, List<int>> adjacencyMap = new Dictionary<int, List<int>>();
+
+            Debug.Log("Selected Triangle Indices: " + string.Join(", ", selectedTriangles));
+            // Iterate through selected triangles
+            foreach (int triIndex in selectedTriangleIndices)
+            {
+                List<int> adjacentTriangles = new List<int>();
+
+                // Get the triangle
+                triangle selectedTri = _triangles[triIndex];
+
+                // Iterate through all triangles to find adjacent ones
+                for (int j = 0; j < _triangles.Count; j++)
+                {
+                    if (j == triIndex) continue; // Skip itself
+
+                    triangle otherTri = _triangles[j];
+
+                    // Count shared vertices
+                    int sharedVertices = 0;
+                    if (selectedTri.index1 == otherTri.index1 || selectedTri.index1 == otherTri.index2 || selectedTri.index1 == otherTri.index3) sharedVertices++;
+                    if (selectedTri.index2 == otherTri.index1 || selectedTri.index2 == otherTri.index2 || selectedTri.index2 == otherTri.index3) sharedVertices++;
+                    if (selectedTri.index3 == otherTri.index1 || selectedTri.index3 == otherTri.index2 || selectedTri.index3 == otherTri.index3) sharedVertices++;
+
+                    // If two triangles share 2 vertices, they are adjacent
+                    if (sharedVertices == 2)
+                    {
+                        adjacentTriangles.Add(j);
+                    }
+                }
+
+                // Store the adjacency list for this triangle
+                adjacencyMap[triIndex] = adjacentTriangles;
+            }
+
+
+            DisplayCentroidText(adjacencyMap);
+
+
+
+            // Debugging: Print adjacency list
+            foreach (var entry in adjacencyMap)
+            {
+                Debug.Log($"Triangle {entry.Key} has {entry.Value.Count} adjacent triangles: {string.Join(", ", entry.Value)}");
+            }
 
         }
 
