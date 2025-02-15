@@ -24,8 +24,7 @@ public class GridManager : MonoBehaviour
 
     public Button regenerateButton;  // Button to regenerate cards manually
 
-    private List<GameObject> farm = new List<GameObject>(); // Track factories
-
+    private List<GameObject> farm = new List<GameObject>(); // Track farms
     private List<GameObject> factories = new List<GameObject>(); // Track factories
     private HashSet<GameObject> blockedCells = new HashSet<GameObject>(); // Track blocked cells
 
@@ -75,6 +74,13 @@ public class GridManager : MonoBehaviour
     {
         if (selectedCard == null || blockedCells.Contains(cell)) return;
 
+        // NEW RULE:
+        // If the cell was previously generating income as a factory or farm,
+        // remove it from the corresponding list. This ensures that if the cell is replaced
+        // by any other card, it will no longer generate money in future turns.
+        factories.Remove(cell);
+        farm.Remove(cell);
+
         Card cardScript = selectedCard.GetComponent<Card>();
         if (cardScript == null) return;
 
@@ -111,11 +117,9 @@ public class GridManager : MonoBehaviour
             {
                 // Factory on Empty Cell - Block Adjacent Empty Cells
                 BlockAdjacentCells(cell);
-
                 // Apply Factory value to the empty cell
                 cell.GetComponentInChildren<TextMeshProUGUI>().text = cardScript.cardValue.ToString();
             }
-
             cell.GetComponent<Image>().color = cardColor;
             factories.Add(cell); // Track factories for income
         }
@@ -134,9 +138,8 @@ public class GridManager : MonoBehaviour
                 // Apply Farm value to the empty cell
                 cell.GetComponentInChildren<TextMeshProUGUI>().text = cardScript.cardValue.ToString();
             }
-
             cell.GetComponent<Image>().color = cardColor;
-            farm.Add(cell); // Track factories for income
+            farm.Add(cell); // Track farms for income
         }
         // Hospital Placement Rule
         else if (cardColor == cardManager.hospitalButton.GetComponent<Image>().color)
@@ -154,9 +157,18 @@ public class GridManager : MonoBehaviour
                 return;
             }
         }
+        // New Rule: Resource card placed over an existing Resource card
+        else if (cardColor == cardManager.resourceButton.GetComponent<Image>().color &&
+                 cell.GetComponent<Image>().color == cardManager.resourceButton.GetComponent<Image>().color)
+        {
+            // Sum the values of the existing resource and the newly placed resource card
+            int newValue = cellValue + cardScript.cardValue;
+            cell.GetComponentInChildren<TextMeshProUGUI>().text = newValue.ToString();
+            // The cell color remains as the resource card color.
+        }
         else
         {
-            // Default placement
+            // Default placement for any other cards or when placing a resource card on a non-resource cell.
             cell.GetComponent<Image>().color = cardColor;
             cell.GetComponentInChildren<TextMeshProUGUI>().text = cardScript.cardValue.ToString();
             totalMoney += cardScript.cardValue;
@@ -171,7 +183,7 @@ public class GridManager : MonoBehaviour
 
         cardsPlayed++;
 
-        // If 1 or 2 cards are played, generate new cards
+        // If 1 or 2 cards are played, generate new cards and factory income
         if (cardsPlayed >= maxCardsPerTurn)
         {
             GenerateFactoryIncome(); // Factory income every turn
@@ -180,12 +192,6 @@ public class GridManager : MonoBehaviour
         }
     }
 
-
-
-    //void UpdateTotalMoney()
-    //{
-    //    totalMoneyText.text = "Total Money: " + totalMoney;
-    //}
     void UpdateTotalMoney()
     {
         totalMoney = 0; // Reset totalMoney before recalculating it.
@@ -203,7 +209,6 @@ public class GridManager : MonoBehaviour
         totalMoneyText.text = "Total Money: " + totalMoney;
     }
 
-
     void RegenerateCards()
     {
         cardManager.GenerateCards();
@@ -211,19 +216,22 @@ public class GridManager : MonoBehaviour
 
     void GenerateFactoryIncome()
     {
-        
+        int tempsum = 0;
         foreach (GameObject factory in factories)
         {
             int factoryValue = int.Parse(factory.GetComponentInChildren<TextMeshProUGUI>().text);
-            int income = Mathf.FloorToInt(0.3f * factoryValue);
-            factoryIncome += income;
+            int income = Mathf.FloorToInt(factoryValue);
+            tempsum += income;
         }
-        foreach (GameObject farm in farm)
+        factoryIncome = factoryIncome + Mathf.FloorToInt(tempsum * 0.3f);
+        tempsum = 0;
+        foreach (GameObject farmCell in farm)
         {
-            int farmValue = int.Parse(farm.GetComponentInChildren<TextMeshProUGUI>().text);
-            int income = Mathf.FloorToInt(0.2f * farmValue);
-            factoryIncome += income;
+            int farmValue = int.Parse(farmCell.GetComponentInChildren<TextMeshProUGUI>().text);
+            int income = Mathf.FloorToInt(farmValue);
+            tempsum += income;
         }
+        factoryIncome = factoryIncome + Mathf.FloorToInt(tempsum * 0.2f);
         UpdateTotalMoney();
     }
 
@@ -261,7 +269,7 @@ public class GridManager : MonoBehaviour
             {
                 GameObject adjacentCell = gridCells[adjX, adjY];
 
-                if (adjacentCell.GetComponent<Image>().color == Color.white) // Only block empty cells
+                if (adjacentCell.GetComponent<Image>().color == Color.white) 
                 {
                     adjacentCell.GetComponent<Image>().color = Color.gray;
                     blockedCells.Add(adjacentCell);
