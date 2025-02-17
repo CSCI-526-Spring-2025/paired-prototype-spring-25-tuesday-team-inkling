@@ -15,7 +15,7 @@ public class EventManager : MonoBehaviour
 
     private List<EventData> eventList = new List<EventData>();
     public int movesCounter = 0;   // Track total moves played
-    private int nextEventMove = 5;  // Define when the next event will occur
+    public int nextEventMove = 5;  // Define when the next event will occur
     private EventData currentEvent;
 
     public Button nextButton; // Assign in Inspector
@@ -37,11 +37,12 @@ public class EventManager : MonoBehaviour
     }
 
     void PopulateEvents()
-    {
-        
+    {        
         eventList.Add(new EventData("Economic Crisis! Lose money:", 1, Random.Range(10, 15)));
         eventList.Add(new EventData("Natural Disaster! Lose 40-60% of houses. Percent is: ", 2, Random.Range(40, 60)));
         eventList.Add(new EventData("Financial Crash! Lose 2-5 grid value. Number is: ", 3, Random.Range(2, 5)));
+        eventList.Add(new EventData("Medical Crisis! Lose 2-4 value from house. Number is: ", 4, Random.Range(2, 4)));
+
     }
 
     public void IncrementMove()
@@ -51,7 +52,7 @@ public class EventManager : MonoBehaviour
         if (movesCounter >= nextEventMove)
         {
             TriggerEvent();
-            nextEventMove += 5; // Schedule next event after 5 moves
+            nextEventMove += Random.Range(4, 6); // Schedule next event after 5 moves
         }
     }
 
@@ -81,8 +82,10 @@ public class EventManager : MonoBehaviour
     {
         //if (currentEvent.type == 2) // Remove 50% of houses
         //{
-            gridManager.RemoveHouses(40);
+            gridManager.RemoveHouses(20);
             gridManager.ReduceFactoryValues();
+            gridManager.SubtractHospitalGridValue(1);
+            gridManager.SubtractGridValue(2);
         //}
 
         // Hide event panel and resume game
@@ -97,6 +100,8 @@ public class EventManager : MonoBehaviour
             gridManager.RemoveHouses(currentEvent.value);
         }
         else if (currentEvent.type == 3) gridManager.SubtractGridValue(currentEvent.value);
+        else if (currentEvent.type == 4) gridManager.SubtractHospitalGridValue(currentEvent.value);
+
 
         // Hide event panel and resume game
         ResumeGame();

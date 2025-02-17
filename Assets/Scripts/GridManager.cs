@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Collections;
+using UnityEditor;
 
 public class GridManager : MonoBehaviour
 {
@@ -257,21 +258,35 @@ public class GridManager : MonoBehaviour
     {
 
         totalMoney = 0; // Reset totalMoney before recalculating it.
+        int count = 0;
 
         // Sum up the values of all grid cells.
         for (int x = 0; x < gridSize; x++)
         {
             for (int y = 0; y < gridSize; y++)
             {
+                GameObject cell = gridCells[x, y];
+                Color hospitalColor = cardManager.hospitalButton.GetComponent<Image>().color;
+                Color houseColor = cardManager.houseButton.GetComponent<Image>().color;
+                Color factoryColor = cardManager.factoryButton.GetComponent<Image>().color;
+                Color farmColor = cardManager.farmButton.GetComponent<Image>().color;
+
+                if (cell.GetComponent<Image>().color == hospitalColor || cell.GetComponent<Image>().color == houseColor || 
+                    cell.GetComponent<Image>().color == factoryColor || cell.GetComponent<Image>().color == farmColor || 
+                    cell.GetComponent<Image>().color == Color.gray) 
+                {
+                    count += 1;
+                }
+
                 int cellValue = int.Parse(gridCells[x, y].GetComponentInChildren<TextMeshProUGUI>().text);
-                totalMoney += cellValue;  // Add cell value to total money
+                totalMoney += cellValue; 
             }
         }
         totalMoney = totalMoney + factoryIncome + subtractAmount;
         totalMoneyText.text = "Total Money: " + totalMoney;
 
         // Check for game over
-        if (totalMoney < 0)
+        if (totalMoney < 0 || count == gridSize * gridSize)
         {
             Debug.Log("Active");
             GameOver();
@@ -425,6 +440,50 @@ public class GridManager : MonoBehaviour
         UpdateTotalMoney();
     }
 
+    public void SubtractHospitalGridValue(int val)
+    {
+        int count = 0;
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                GameObject cell = gridCells[x, y];
+                Color hospitalColor = cardManager.hospitalButton.GetComponent<Image>().color;
+                TextMeshProUGUI textComponent = cell.GetComponentInChildren<TextMeshProUGUI>();
+                if (cell.GetComponent<Image>().color == hospitalColor)
+                {
+                    count += 1;
+                    //value = int.Parse(textComponent.text);
+                }
+            }
+        }
+        for (int x = 0; x < gridSize; x++)
+        {
+            for (int y = 0; y < gridSize; y++)
+            {
+                GameObject cell = gridCells[x, y];
+                Color houseColor = cardManager.houseButton.GetComponent<Image>().color;
+                TextMeshProUGUI textComponent = cell.GetComponentInChildren<TextMeshProUGUI>();
+                if (cell.GetComponent<Image>().color == houseColor)
+                {
+                    int value = int.Parse(textComponent.text);
+                    val = val * (1 - (count / 10));
+                    value -= val;
+                    if (value <= 0)
+                    {
+                        value = 0; // Set to 0 instead of negative values
+                        cell.GetComponent<Image>().color = Color.white; // Reset color
+                    }
+
+                    textComponent.text = value.ToString(); // Update displayed value
+                }
+            }
+        }
+
+
+        UpdateTotalMoney();
+    }
+
 
     void GameOver()
     {
@@ -472,31 +531,16 @@ public class GridManager : MonoBehaviour
         if (eventManager != null)
         {
             eventManager.movesCounter = 0;
+            eventManager.nextEventMove = 5;
         }
         if (cardManager != null)
         {
             cardManager.moveCount = 1;
             cardManager.UpdateMoveCount();
         }
+        
         UpdateTotalMoney();  
     }
-
-
-
-
-    //public void SubtractGridValue(int val)
-    //{
-    //    int amount = val;
-    //    foreach (GameObject cell in gridCells)
-    //    {
-    //        int value = int.Parse(cell.GetComponentInChildren<TextMeshProUGUI>().text);
-    //        value -= amount;
-    //        if (value < 0) value = 0;
-    //        cell.GetComponentInChildren<TextMeshProUGUI>().text = value.ToString();
-    //    }
-
-    //    UpdateTotalMoney();
-    //}
 
 
 }
