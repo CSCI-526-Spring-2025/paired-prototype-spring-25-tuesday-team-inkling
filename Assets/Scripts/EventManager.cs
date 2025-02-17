@@ -84,7 +84,7 @@ public class EventManager : MonoBehaviour
         //{
             gridManager.RemoveHouses(20);
             gridManager.ReduceFactoryValues();
-            gridManager.SubtractHospitalGridValue(1);
+            //gridManager.SubtractHospitalGridValue(1);
             gridManager.SubtractGridValue(2);
         //}
 
