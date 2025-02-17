@@ -11,6 +11,9 @@ public class GridManager : MonoBehaviour
     public int gridSize = 5;       // Default grid size 5x5
     private GameObject[,] gridCells;
 
+    public GameObject gameOverUI;  
+
+
     public TextMeshProUGUI totalMoneyText;
     private int totalMoney = 0;
 
@@ -23,6 +26,9 @@ public class GridManager : MonoBehaviour
     private int factoryIncome = 0;
     private int subtractAmount = 0;
 
+    private EventManager eventManager;
+
+
     private const int maxCardsPerTurn = 2; // Maximum cards per turn
 
     public Button regenerateButton;  // Button to regenerate cards manually
@@ -33,6 +39,21 @@ public class GridManager : MonoBehaviour
 
     void Start()
     {
+        if (gameOverUI == null)
+        {
+            gameOverUI = GameObject.Find("GameOverUI");  // Finds UI by name
+            if (gameOverUI == null)
+            {
+                Debug.LogError("GameOverUI not found in the scene! Check if it's active in Hierarchy.");
+            }
+        }
+        //GameObject gameOverUI = GameObject.Find("GameOverUI"); // Assuming you have a UI panel named "GameOverUI"
+        if (gameOverUI != null)
+        {
+            Debug.Log("Active21");
+            gameOverUI.SetActive(false); // Show the Game Over UI
+            Debug.Log("Active2");
+        }
         GenerateGrid();
         UpdateTotalMoney();
         regenerateButton.onClick.AddListener(RegenerateCards);
@@ -40,6 +61,22 @@ public class GridManager : MonoBehaviour
 
     void GenerateGrid()
     {
+        if (gameOverUI == null)
+        {
+            gameOverUI = GameObject.Find("GameOverUI");  // Finds UI by name
+            if (gameOverUI == null)
+            {
+                Debug.LogError("GameOverUI not found in the scene! Check if it's active in Hierarchy.");
+            }
+        }
+        //GameObject gameOverUI = GameObject.Find("GameOverUI"); // Assuming you have a UI panel named "GameOverUI"
+        if (gameOverUI != null)
+        {
+            Debug.Log("Active21");
+            gameOverUI.SetActive(false); // Show the Game Over UI
+            Debug.Log("Active2");
+        }
+
         gridCells = new GameObject[gridSize, gridSize];
 
         GridLayoutGroup gridLayout = gridParent.GetComponent<GridLayoutGroup>();
@@ -236,6 +273,7 @@ public class GridManager : MonoBehaviour
         // Check for game over
         if (totalMoney < 0)
         {
+            Debug.Log("Active");
             GameOver();
         }
 
@@ -390,20 +428,24 @@ public class GridManager : MonoBehaviour
 
     void GameOver()
     {
-        // Display Game Over UI
-        GameObject gameOverUI = GameObject.Find("GameOverUI"); // Assuming you have a UI panel named "GameOverUI"
-        if (gameOverUI != null)
+        if (gameOverUI == null)
         {
-            gameOverUI.SetActive(true); // Show the Game Over UI
-            Debug.Log("Active");
+            gameOverUI = GameObject.Find("GameOverUI");  // Finds UI by name
+            if (gameOverUI == null)
+            {
+                Debug.LogError("GameOverUI not found in the scene! Check if it's active in Hierarchy.");
+            }
         }
 
-        // Optionally, stop any ongoing game mechanics (like income generation, card regeneration, etc.)
-        //Time.timeScale = 0;  // Freeze time if needed (to prevent further actions)
-        StartCoroutine(DelayAction(5));
+        //GameObject gameOverUI = GameObject.Find("GameOverUI"); // Assuming you have a UI panel named "GameOverUI"
+        if (gameOverUI != null)
+        {
+            Debug.Log("Active21");
+            gameOverUI.SetActive(true); // Show the Game Over UI
+            Invoke("RegenerateGrid", 5f); // Calls ShowGameOver after 2 seconds
+            Debug.Log("Active2");
+        }
 
-        //Clear grid or reset to initial state 
-        RegenerateGrid(); // Call a method to reset or regenerate the grid
     }
 
     void RegenerateGrid()
@@ -415,6 +457,9 @@ public class GridManager : MonoBehaviour
         }
 
         GenerateGrid();  // Regenerate the grid from scratch
+        eventManager = FindObjectOfType<EventManager>();
+        cardManager = FindObjectOfType<CardManager>();
+
         GameObject gameOverUI = GameObject.Find("GameOverUI");
         if (gameOverUI != null)
         {
@@ -424,29 +469,18 @@ public class GridManager : MonoBehaviour
         subtractAmount = 0;
         cardsPlayed = 0;
         factoryIncome = 0;
-        //EventManager.movesCounter = 0;
-        UpdateTotalMoney();  // Update the UI with reset total money
-        //yield return new WaitForSeconds(5);
-        //Time.timeScale = 1;  // Unfreeze time if it was frozen
+        if (eventManager != null)
+        {
+            eventManager.movesCounter = 0;
+        }
+        if (cardManager != null)
+        {
+            cardManager.moveCount = 1;
+            cardManager.UpdateMoveCount();
+        }
+        UpdateTotalMoney();  
     }
-    IEnumerator DelayAction(float delayTime)
-    {
-        //Wait for the specified delay time before continuing.
-        yield return new WaitForSeconds(delayTime);
 
-        //Do the action after the delay time has finished.
-    }
-
-    //public void RestartGame()
-    //{
-    //    // Regenerate the grid and reset necessary game components
-    //    RegenerateGrid();
-    //    GameObject gameOverUI = GameObject.Find("GameOverUI");
-    //    if (gameOverUI != null)
-    //    {
-    //        gameOverUI.SetActive(false); // Hide the Game Over UI
-    //    }
-    //}
 
 
 

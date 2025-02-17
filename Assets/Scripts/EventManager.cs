@@ -20,7 +20,6 @@ public class EventManager : MonoBehaviour
 
     public Button nextButton; // Assign in Inspector
 
-
     void Start()
     {
         gridManager = FindObjectOfType<GridManager>();

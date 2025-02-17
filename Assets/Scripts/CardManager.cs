@@ -12,7 +12,7 @@ public class CardManager : MonoBehaviour
     public Card[] policyCards;   // Array for policy cards
 
     public TextMeshProUGUI moveCountText;  // UI Text to display move count
-    private int moveCount = 0;             // Move count to track the number of times cards are regenerated
+    public int moveCount = 0;             // Move count to track the number of times cards are regenerated
 
     void Start()
     {
@@ -106,7 +106,7 @@ public class CardManager : MonoBehaviour
     }
 
     // Update the move count display
-    void UpdateMoveCount()
+   public void UpdateMoveCount()
     {
         moveCountText.text = "Moves: " + moveCount;
     }
