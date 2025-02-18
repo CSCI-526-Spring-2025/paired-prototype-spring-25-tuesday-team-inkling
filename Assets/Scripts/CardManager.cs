@@ -12,7 +12,7 @@ public class CardManager : MonoBehaviour
     public Card[] policyCards;   // Array for policy cards
 
     public TextMeshProUGUI moveCountText;  // UI Text to display move count
-    private int moveCount = 0;             // Move count to track the number of times cards are regenerated
+    public int moveCount = 0;             // Move count to track the number of times cards are regenerated
 
     void Start()
     {
@@ -50,6 +50,11 @@ public class CardManager : MonoBehaviour
             // Assign 1 Policy Card
             int policyIndex = Random.Range(0, policyCards.Length);
             int policyValue = values[Random.Range(0, values.Length)];
+            if (policyIndex == 1) policyValue = values[Random.Range(4, values.Length)];
+            if (policyIndex == 2) policyValue = values[Random.Range(3, values.Length)];
+            if (policyIndex == 3) policyValue = values[Random.Range(2, values.Length)];
+
+
             AssignCard(cardSlots[cardCount], GetPolicyColor(policyIndex), policyValue);
         }
         else
@@ -59,6 +64,9 @@ public class CardManager : MonoBehaviour
             {
                 int policyIndex = Random.Range(0, policyCards.Length);
                 int policyValue = values[Random.Range(0, values.Length)];
+                if (policyIndex == 1) policyValue = values[Random.Range(4, values.Length)];
+                if (policyIndex == 2) policyValue = values[Random.Range(3, values.Length)];
+                if (policyIndex == 3) policyValue = values[Random.Range(2, values.Length)];
                 AssignCard(cardSlots[cardCount], GetPolicyColor(policyIndex), policyValue);
                 cardCount++;
             }
@@ -98,8 +106,25 @@ public class CardManager : MonoBehaviour
     }
 
     // Update the move count display
-    void UpdateMoveCount()
+   public void UpdateMoveCount()
     {
         moveCountText.text = "Moves: " + moveCount;
+    }
+    // Function to disable card selection
+    public void DisableCardSelection()
+    {
+        foreach (Button cardSlot in cardSlots)
+        {
+            cardSlot.interactable = false;
+        }
+    }
+
+    // Function to enable card selection
+    public void EnableCardSelection()
+    {
+        foreach (Button cardSlot in cardSlots)
+        {
+            cardSlot.interactable = true;
+        }
     }
 }
